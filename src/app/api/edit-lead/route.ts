@@ -1,14 +1,5 @@
+import { LeadStatus, UpdateStatusRequest } from "@/types/Lead";
 import { NextRequest, NextResponse } from "next/server";
-
-interface UpdateStatusRequest {
-  id: string;
-  status: LeadStatus;
-}
-
-export enum LeadStatus {
-  PENDING = "pending",
-  REACHED_OUT = "reached_out",
-}
 
 export async function POST(request: NextRequest) {
   try {

@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { LoadingSpinner } from "../LoadingSpinner";
-import { LeadStatus } from "@/app/api/edit-lead/route";
+import { LeadStatus } from "@/types/Lead";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "next/navigation";
 
