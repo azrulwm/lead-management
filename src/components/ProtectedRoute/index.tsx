@@ -1,18 +1,21 @@
 "use client";
 
-import { Login } from "@/components/Login";
+import React, { useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
-import { LoadingSpinner } from "@/components/LoadingSpinner";
+import { LoadingSpinner } from "../LoadingSpinner";
 
-export default function HomePage() {
+interface ProtectedRouteProps {
+  children: React.ReactNode;
+}
+
+export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   const { isAuthenticated, loading } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
-    if (!loading && isAuthenticated) {
-      router.push("/internal");
+    if (!loading && !isAuthenticated) {
+      router.push("/");
     }
   }, [isAuthenticated, loading, router]);
 
@@ -24,9 +27,9 @@ export default function HomePage() {
     );
   }
 
-  if (isAuthenticated) {
+  if (!isAuthenticated) {
     return null;
   }
 
-  return <Login />;
-}
+  return <>{children}</>;
+};

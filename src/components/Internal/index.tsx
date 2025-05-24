@@ -3,6 +3,8 @@
 import React, { useEffect, useState } from "react";
 import { LoadingSpinner } from "../LoadingSpinner";
 import { LeadStatus } from "@/app/api/edit-lead/route";
+import { useAuth } from "@/contexts/AuthContext";
+import { useRouter } from "next/navigation";
 
 interface Lead {
   id: string;
@@ -31,6 +33,8 @@ const formatDate = (dateString: string) => {
 export const Internal: React.FC = () => {
   const [leads, setLeads] = useState<Lead[]>([]);
   const [loading, setLoading] = useState(true);
+  const { logout } = useAuth();
+  const router = useRouter();
 
   // Modal state
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -100,12 +104,17 @@ export const Internal: React.FC = () => {
       );
 
       closeModal();
-    } catch (err) {
+    } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Unknown error";
       throw new Error(msg);
     } finally {
       setIsUpdating(false);
     }
+  };
+
+  const handleLogout = () => {
+    logout();
+    router.push("/");
   };
 
   if (loading) return <LoadingSpinner />;
@@ -115,15 +124,20 @@ export const Internal: React.FC = () => {
       <aside className="h-screen w-60 border-r bg-white p-6">
         <nav className="space-y-4">
           <h2 className="text-lg font-bold text-gray-700">Leads</h2>
-          <div className="cursor-pointer text-gray-500 hover:text-black">
-            Settings
-          </div>
         </nav>
-        <div className="absolute bottom-6 left-6 flex items-center space-x-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-200 text-sm font-bold">
-            A
+        <div className="absolute bottom-6 left-6 flex w-48 items-center justify-between">
+          <div className="flex items-center space-x-2">
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-200 text-sm font-bold">
+              A
+            </div>
+            <span className="font-medium text-gray-700">Admin</span>
           </div>
-          <span className="font-medium text-gray-700">Admin</span>
+          <button
+            onClick={handleLogout}
+            className="text-sm font-medium text-red-600 hover:text-red-800"
+          >
+            Logout
+          </button>
         </div>
       </aside>
 
