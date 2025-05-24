@@ -15,6 +15,7 @@ export interface LeadFormData {
   linkedin: string;
   visas: string[];
   message: string;
+  resume: File | null;
 }
 
 interface ApiResponse {
@@ -34,6 +35,7 @@ export const LeadForm: React.FC = () => {
     linkedin: "",
     visas: [],
     message: "",
+    resume: null,
   });
   const [loading, setLoading] = useState(false);
   const router = useRouter();
@@ -50,7 +52,12 @@ export const LeadForm: React.FC = () => {
   ) => {
     const { name, value, type } = e.target;
     const field = name as FormFieldName;
-    if (type === "checkbox") {
+
+    if (type === "file") {
+      const fileInput = e.target as HTMLInputElement;
+      const file = fileInput.files?.[0] || null;
+      setForm((prev) => ({ ...prev, resume: file }));
+    } else if (type === "checkbox") {
       setForm((prev) => {
         const visas = prev.visas.includes(value)
           ? prev.visas.filter((v) => v !== value)
@@ -70,12 +77,32 @@ export const LeadForm: React.FC = () => {
       return;
     }
 
+    // Validate that CV is uploaded (required)
+    if (!form.resume) {
+      alert("Please upload your Resume/CV.");
+      return;
+    }
+
     setLoading(true);
 
     try {
+      // Create payload WITHOUT the CV file for Google Sheets
+      const payload = {
+        firstName: form.firstName,
+        lastName: form.lastName,
+        email: form.email,
+        country: form.country,
+        linkedin: form.linkedin,
+        visas: form.visas,
+        message: form.message,
+        // Note: CV is uploaded but not sent to Google Sheets
+        cvUploaded: true, // Optional: flag to indicate CV was provided
+        cvFileName: form.resume.name, // Optional: store just the filename
+      };
+
       const res = await fetch("/api/submit-form", {
         method: "POST",
-        body: JSON.stringify(form),
+        body: JSON.stringify(payload),
         headers: {
           "Content-Type": "application/json",
         },
@@ -101,6 +128,7 @@ export const LeadForm: React.FC = () => {
           linkedin: "",
           visas: [],
           message: "",
+          resume: null,
         });
       } else {
         throw new Error(data.message || "Submission failed");
@@ -207,6 +235,26 @@ export const LeadForm: React.FC = () => {
               className="rounded-md border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400 sm:col-span-2"
               disabled={loading}
             />
+
+            <div className="sm:col-span-2">
+              <label className="mb-2 block text-sm font-medium text-gray-700">
+                Resume/CV Upload *
+              </label>
+              <input
+                type="file"
+                name="resume"
+                onChange={handleChange}
+                accept=".pdf,.doc,.docx"
+                required
+                className="block w-full text-sm text-gray-500 file:mr-4 file:rounded-md file:border-0 file:bg-indigo-50 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-indigo-700 hover:file:bg-indigo-100 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                disabled={loading}
+              />
+              {form.resume && (
+                <p className="mt-1 text-sm text-gray-600">
+                  Selected: {form.resume.name}
+                </p>
+              )}
+            </div>
           </div>
 
           <div className="space-y-2">
