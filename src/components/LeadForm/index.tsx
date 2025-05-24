@@ -6,7 +6,7 @@ import DiceIcon from "@/components/icons/Dice";
 import HeartIcon from "@/components/icons/Heart";
 import { countryList } from "@/constant/countries";
 
-interface LeadFormData {
+export interface LeadFormData {
   firstName: string;
   lastName: string;
   email: string;
@@ -14,6 +14,12 @@ interface LeadFormData {
   linkedin: string;
   visas: string[];
   message: string;
+}
+
+interface ApiResponse {
+  result: string;
+  message?: string;
+  error?: string;
 }
 
 type FormFieldName = keyof LeadFormData;
@@ -54,7 +60,7 @@ export const LeadForm: React.FC = () => {
     }
   };
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     if (form.visas.length === 0) {
@@ -62,8 +68,47 @@ export const LeadForm: React.FC = () => {
       return;
     }
 
-    console.log("Form submission:", form);
-    router.push("/thank-you");
+    try {
+      const res = await fetch("/api/submit-form", {
+        method: "POST",
+        body: JSON.stringify(form),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!res.ok) {
+        const errorData: ApiResponse = await res.json();
+        throw new Error(
+          `HTTP error! Status: ${res.status}, Message: ${errorData.message}`
+        );
+      }
+
+      const data: ApiResponse = await res.json();
+
+      if (data.result === "success") {
+        router.push("/thank-you");
+
+        setForm({
+          firstName: "",
+          lastName: "",
+          email: "",
+          country: "",
+          linkedin: "",
+          visas: [],
+          message: "",
+        });
+      } else {
+        throw new Error(data.message || "Submission failed");
+      }
+    } catch (error) {
+      console.error("Fetch error:", error);
+      alert(
+        `There was an error submitting the form: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`
+      );
+    }
   };
 
   return (
