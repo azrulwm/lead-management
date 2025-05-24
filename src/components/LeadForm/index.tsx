@@ -96,8 +96,8 @@ export const LeadForm: React.FC = () => {
         visas: form.visas,
         message: form.message,
         // Note: CV is uploaded but not sent to Google Sheets
-        cvUploaded: true, // Optional: flag to indicate CV was provided
-        cvFileName: form.resume.name, // Optional: store just the filename
+        cvUploaded: true,
+        cvFileName: form.resume.name,
       };
 
       const res = await fetch("/api/submit-form", {
