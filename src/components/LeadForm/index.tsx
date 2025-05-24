@@ -5,6 +5,7 @@ import FileIcon from "@/components/icons/File";
 import DiceIcon from "@/components/icons/Dice";
 import HeartIcon from "@/components/icons/Heart";
 import { countryList } from "@/constant/countries";
+import { LoadingSpinner } from "@/components/LoadingSpinner";
 
 export interface LeadFormData {
   firstName: string;
@@ -34,6 +35,7 @@ export const LeadForm: React.FC = () => {
     visas: [],
     message: "",
   });
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
 
   const visaOptions: LeadFormData["visas"] = [
@@ -67,6 +69,8 @@ export const LeadForm: React.FC = () => {
       alert("Please select at least one visa option.");
       return;
     }
+
+    setLoading(true);
 
     try {
       const res = await fetch("/api/submit-form", {
@@ -108,6 +112,8 @@ export const LeadForm: React.FC = () => {
           error instanceof Error ? error.message : "Unknown error"
         }`
       );
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -122,8 +128,14 @@ export const LeadForm: React.FC = () => {
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-12">
-        <form onSubmit={handleSubmit} className="mx-auto max-w-xl space-y-8">
+      <main className="container mx-auto max-w-xl px-4 py-12">
+        {loading && (
+          <div className="mb-6 flex justify-center">
+            <LoadingSpinner />
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} className="space-y-8">
           <div className="space-y-2 text-center">
             <div className="flex justify-center">
               <FileIcon />
@@ -147,6 +159,7 @@ export const LeadForm: React.FC = () => {
               placeholder="First Name"
               required
               className="rounded-md border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+              disabled={loading}
             />
             <input
               type="text"
@@ -156,6 +169,7 @@ export const LeadForm: React.FC = () => {
               placeholder="Last Name"
               required
               className="rounded-md border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+              disabled={loading}
             />
             <input
               type="email"
@@ -165,6 +179,7 @@ export const LeadForm: React.FC = () => {
               placeholder="Email"
               required
               className="rounded-md border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400 sm:col-span-2"
+              disabled={loading}
             />
             <select
               name="country"
@@ -172,6 +187,7 @@ export const LeadForm: React.FC = () => {
               onChange={handleChange}
               required
               className="rounded-md border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400 sm:col-span-2"
+              disabled={loading}
             >
               <option value="">Country of Citizenship</option>
               {countryList.map((country: string) => (
@@ -189,6 +205,7 @@ export const LeadForm: React.FC = () => {
               required
               placeholder="LinkedIn / Personal Website URL"
               className="rounded-md border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400 sm:col-span-2"
+              disabled={loading}
             />
           </div>
 
@@ -212,6 +229,7 @@ export const LeadForm: React.FC = () => {
                     checked={form.visas.includes(visa)}
                     onChange={handleChange}
                     className="form-checkbox h-5 w-5 text-indigo-600"
+                    disabled={loading}
                   />
                   <span className="text-gray-700">{visa}</span>
                 </label>
@@ -234,15 +252,19 @@ export const LeadForm: React.FC = () => {
               rows={6}
               placeholder="Describe your current status, history, and any timelines..."
               className="w-full rounded-md border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+              disabled={loading}
             />
           </div>
 
           <div className="flex justify-center">
             <button
               type="submit"
-              className="rounded-full bg-black px-8 py-3 text-white transition hover:opacity-90"
+              disabled={loading}
+              className={`rounded-full bg-black px-8 py-3 text-white transition hover:opacity-90 ${
+                loading ? "cursor-not-allowed opacity-50" : ""
+              }`}
             >
-              Submit
+              {loading ? "Submitting..." : "Submit"}
             </button>
           </div>
         </form>
