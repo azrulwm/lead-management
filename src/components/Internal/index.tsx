@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import { LoadingSpinner } from "../LoadingSpinner";
 import { LeadStatus } from "@/types/Lead";
 import { useAuth } from "@/contexts/AuthContext";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 interface Lead {
   id: string;
@@ -30,11 +30,19 @@ const formatDate = (dateString: string) => {
   });
 };
 
+const ITEMS_PER_PAGE = 10;
+
 export const Internal: React.FC = () => {
-  const [leads, setLeads] = useState<Lead[]>([]);
+  const [allLeads, setAllLeads] = useState<Lead[]>([]);
   const [loading, setLoading] = useState(true);
   const { logout } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
+
+  // Get current page, status filter, and search query from URL
+  const currentPage = parseInt(searchParams.get("page") || "1", 10);
+  const statusFilter = searchParams.get("status") || "";
+  const searchQuery = searchParams.get("search") || "";
 
   // Modal state
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -42,13 +50,47 @@ export const Internal: React.FC = () => {
   const [newStatus, setNewStatus] = useState<LeadStatus>(LeadStatus.PENDING);
   const [isUpdating, setIsUpdating] = useState(false);
 
+  // Search state for controlled input
+  const [searchInput, setSearchInput] = useState(searchQuery);
+
+  // Update search input when URL changes (e.g., back/forward navigation)
+  useEffect(() => {
+    setSearchInput(searchQuery);
+  }, [searchQuery]);
+
+  // Filter leads by status and search query
+  let filteredLeads = allLeads;
+
+  // Apply status filter
+  if (statusFilter) {
+    filteredLeads = filteredLeads.filter(
+      (lead) => lead.status === statusFilter
+    );
+  }
+
+  // Apply search filter (first name or last name)
+  if (searchQuery) {
+    filteredLeads = filteredLeads.filter(
+      (lead) =>
+        lead.firstName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        lead.lastName.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  }
+
+  // Calculate pagination based on filtered data
+  const totalItems = filteredLeads.length;
+  const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const endIndex = startIndex + ITEMS_PER_PAGE;
+  const currentLeads = filteredLeads.slice(startIndex, endIndex);
+
   useEffect(() => {
     async function fetchLeads() {
       try {
         const response = await fetch("/api/get-leads");
         if (!response.ok) throw new Error("Failed to fetch leads");
         const data = await response.json();
-        setLeads(data);
+        setAllLeads(data);
       } catch (err: unknown) {
         const errorMessage =
           err instanceof Error ? err.message : "Failed to fetch leads";
@@ -97,7 +139,7 @@ export const Internal: React.FC = () => {
       }
 
       // Update the lead in the local state
-      setLeads((prevLeads) =>
+      setAllLeads((prevLeads) =>
         prevLeads.map((lead) =>
           lead.id === selectedLead.id ? { ...lead, status: newStatus } : lead
         )
@@ -115,6 +157,143 @@ export const Internal: React.FC = () => {
   const handleLogout = () => {
     logout();
     router.push("/");
+  };
+
+  const handlePageChange = (page: number) => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("page", page.toString());
+    router.push(`?${params.toString()}`);
+  };
+
+  const handleStatusFilter = (status: string) => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (status && status !== "all") {
+      params.set("status", status);
+    } else {
+      params.delete("status");
+    }
+    // Reset to page 1 when changing filter
+    params.set("page", "1");
+    router.push(`?${params.toString()}`);
+  };
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchInput(e.target.value);
+  };
+
+  const handleSearchSubmit = () => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (searchInput.trim()) {
+      params.set("search", searchInput.trim());
+    } else {
+      params.delete("search");
+    }
+    // Reset to page 1 when searching
+    params.set("page", "1");
+    router.push(`?${params.toString()}`);
+  };
+
+  const handleSearchKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      handleSearchSubmit();
+    }
+  };
+
+  const renderPaginationButtons = () => {
+    const buttons = [];
+    const maxVisiblePages = 5;
+
+    // Calculate the range of page numbers to show
+    let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+    const endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+
+    // Adjust start page if we're near the end
+    if (endPage - startPage + 1 < maxVisiblePages) {
+      startPage = Math.max(1, endPage - maxVisiblePages + 1);
+    }
+
+    // Previous button
+    buttons.push(
+      <button
+        key="prev"
+        onClick={() => handlePageChange(currentPage - 1)}
+        disabled={currentPage === 1}
+        className="rounded border border-gray-300 px-3 py-1 text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:hover:bg-transparent"
+      >
+        {"<"}
+      </button>
+    );
+
+    // First page and ellipsis if needed
+    if (startPage > 1) {
+      buttons.push(
+        <button
+          key={1}
+          onClick={() => handlePageChange(1)}
+          className="rounded border border-gray-300 px-3 py-1 text-gray-500 hover:bg-gray-50"
+        >
+          1
+        </button>
+      );
+      if (startPage > 2) {
+        buttons.push(
+          <span key="ellipsis1" className="px-3 py-1 text-gray-500">
+            ...
+          </span>
+        );
+      }
+    }
+
+    // Page number buttons
+    for (let i = startPage; i <= endPage; i++) {
+      buttons.push(
+        <button
+          key={i}
+          onClick={() => handlePageChange(i)}
+          className={`rounded border px-3 py-1 ${
+            i === currentPage
+              ? "border-gray-400 bg-gray-100 font-medium text-black"
+              : "border-gray-300 text-gray-500 hover:bg-gray-50"
+          }`}
+        >
+          {i}
+        </button>
+      );
+    }
+
+    // Last page and ellipsis if needed
+    if (endPage < totalPages) {
+      if (endPage < totalPages - 1) {
+        buttons.push(
+          <span key="ellipsis2" className="px-3 py-1 text-gray-500">
+            ...
+          </span>
+        );
+      }
+      buttons.push(
+        <button
+          key={totalPages}
+          onClick={() => handlePageChange(totalPages)}
+          className="rounded border border-gray-300 px-3 py-1 text-gray-500 hover:bg-gray-50"
+        >
+          {totalPages}
+        </button>
+      );
+    }
+
+    // Next button
+    buttons.push(
+      <button
+        key="next"
+        onClick={() => handlePageChange(currentPage + 1)}
+        disabled={currentPage === totalPages}
+        className="rounded border border-gray-300 px-3 py-1 text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:hover:bg-transparent"
+      >
+        {">"}
+      </button>
+    );
+
+    return buttons;
   };
 
   if (loading) return <LoadingSpinner />;
@@ -145,15 +324,44 @@ export const Internal: React.FC = () => {
         <h2 className="mb-6 text-2xl font-bold">Leads</h2>
 
         <div className="mb-4 flex items-center justify-between">
-          <input
-            type="text"
-            placeholder="Search"
-            className="w-64 rounded border border-gray-300 px-3 py-2 text-sm"
-          />
-          <select className="rounded border border-gray-300 px-3 py-2 text-sm">
-            <option>Status</option>
-            <option value="pending">Pending</option>
-            <option value="reached_out">Reached Out</option>
+          <div className="flex items-center space-x-2">
+            <input
+              type="text"
+              placeholder="Search by first or last name..."
+              value={searchInput}
+              onChange={handleSearchChange}
+              onKeyPress={handleSearchKeyPress}
+              className="w-64 rounded border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none"
+            />
+            <button
+              onClick={handleSearchSubmit}
+              className="rounded bg-blue-500 px-4 py-2 text-sm text-white hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400"
+            >
+              Search
+            </button>
+            {searchQuery && (
+              <button
+                onClick={() => {
+                  setSearchInput("");
+                  const params = new URLSearchParams(searchParams.toString());
+                  params.delete("search");
+                  params.set("page", "1");
+                  router.push(`?${params.toString()}`);
+                }}
+                className="rounded border border-gray-300 px-3 py-2 text-sm text-gray-600 hover:bg-gray-50"
+              >
+                Clear
+              </button>
+            )}
+          </div>
+          <select
+            value={statusFilter || "all"}
+            onChange={(e) => handleStatusFilter(e.target.value)}
+            className="rounded border border-gray-300 px-3 py-2 text-sm"
+          >
+            <option value="all">All Status</option>
+            <option value={LeadStatus.PENDING}>Pending</option>
+            <option value={LeadStatus.REACHED_OUT}>Reached Out</option>
           </select>
         </div>
 
@@ -179,7 +387,7 @@ export const Internal: React.FC = () => {
               </tr>
             </thead>
             <tbody>
-              {leads.map((lead, idx) => (
+              {currentLeads.map((lead, idx) => (
                 <tr
                   key={idx}
                   className="border-t border-gray-200 transition-colors hover:bg-gray-50"
@@ -208,26 +416,18 @@ export const Internal: React.FC = () => {
           </table>
         </div>
 
-        <div className="mt-4 flex justify-end space-x-2 text-sm">
-          <button
-            className="rounded border border-gray-300 px-3 py-1 text-gray-500 disabled:opacity-50"
-            disabled
-          >
-            {"<"}
-          </button>
-          <button className="rounded border border-gray-400 bg-gray-100 px-3 py-1 font-medium text-black">
-            1
-          </button>
-          <button className="rounded border border-gray-300 px-3 py-1 text-gray-500">
-            2
-          </button>
-          <button className="rounded border border-gray-300 px-3 py-1 text-gray-500">
-            3
-          </button>
-          <button className="rounded border border-gray-300 px-3 py-1 text-gray-500">
-            {">"}
-          </button>
-        </div>
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="mt-4 flex items-center justify-between">
+            <div className="text-sm text-gray-600">
+              Showing {startIndex + 1} to {Math.min(endIndex, totalItems)} of{" "}
+              {totalItems} results
+            </div>
+            <div className="flex space-x-2 text-sm">
+              {renderPaginationButtons()}
+            </div>
+          </div>
+        )}
       </main>
 
       {/* Edit Status Modal */}
