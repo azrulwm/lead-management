@@ -147,31 +147,31 @@ export const LeadForm: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <header className="bg-green-100 py-16">
+      <header className="bg-green-100 py-12 md:py-16">
         <div className="container mx-auto px-4 text-center">
-          <h1 className="mb-4 text-4xl font-bold">almā</h1>
-          <h2 className="text-3xl font-bold">
+          <h1 className="mb-4 text-3xl font-bold md:text-4xl">almā</h1>
+          <h2 className="text-2xl font-bold md:text-3xl">
             Get An Assessment Of Your Immigration Case
           </h2>
         </div>
       </header>
 
-      <main className="container mx-auto max-w-xl px-4 py-12">
+      <main className="container mx-auto max-w-xl px-4 py-8 md:py-12">
         {loading && (
           <div className="mb-6 flex justify-center">
             <LoadingSpinner />
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-8">
+        <form onSubmit={handleSubmit} className="space-y-6 md:space-y-8">
           <div className="space-y-2 text-center">
             <div className="flex justify-center">
               <FileIcon />
             </div>
-            <h3 className="text-xl font-semibold">
+            <h3 className="text-lg font-semibold md:text-xl">
               Want to understand your visa options?
             </h3>
-            <p className="text-gray-600">
+            <p className="text-sm text-gray-600 md:text-base">
               Submit the form below and our team of experienced attorneys will
               review your information and send a preliminary assessment of your
               case based on your goals.
@@ -186,7 +186,7 @@ export const LeadForm: React.FC = () => {
               onChange={handleChange}
               placeholder="First Name"
               required
-              className="rounded-md border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+              className="rounded-md border border-gray-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-400 md:py-2"
               disabled={loading}
             />
             <input
@@ -196,7 +196,7 @@ export const LeadForm: React.FC = () => {
               onChange={handleChange}
               placeholder="Last Name"
               required
-              className="rounded-md border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+              className="rounded-md border border-gray-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-400 md:py-2"
               disabled={loading}
             />
             <input
@@ -206,7 +206,7 @@ export const LeadForm: React.FC = () => {
               onChange={handleChange}
               placeholder="Email"
               required
-              className="rounded-md border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400 sm:col-span-2"
+              className="rounded-md border border-gray-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-400 sm:col-span-2 md:py-2"
               disabled={loading}
             />
             <select
@@ -214,7 +214,7 @@ export const LeadForm: React.FC = () => {
               value={form.country}
               onChange={handleChange}
               required
-              className="rounded-md border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400 sm:col-span-2"
+              className="rounded-md border border-gray-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-400 sm:col-span-2 md:py-2"
               disabled={loading}
             >
               <option value="">Country of Citizenship</option>
@@ -232,7 +232,7 @@ export const LeadForm: React.FC = () => {
               onChange={handleChange}
               required
               placeholder="LinkedIn / Personal Website URL"
-              className="rounded-md border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400 sm:col-span-2"
+              className="rounded-md border border-gray-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-400 sm:col-span-2 md:py-2"
               disabled={loading}
             />
 
@@ -268,7 +268,7 @@ export const LeadForm: React.FC = () => {
               {visaOptions.map((visa) => (
                 <label
                   key={visa}
-                  className="inline-flex items-center space-x-2"
+                  className="inline-flex w-48 items-center space-x-2"
                 >
                   <input
                     type="checkbox"
@@ -297,9 +297,9 @@ export const LeadForm: React.FC = () => {
               value={form.message}
               onChange={handleChange}
               required
-              rows={6}
+              rows={5}
+              className="md:rows-6 w-full rounded-md border border-gray-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-400 md:py-2"
               placeholder="Describe your current status, history, and any timelines..."
-              className="w-full rounded-md border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400"
               disabled={loading}
             />
           </div>
@@ -308,7 +308,7 @@ export const LeadForm: React.FC = () => {
             <button
               type="submit"
               disabled={loading}
-              className={`rounded-full bg-black px-8 py-3 text-white transition hover:opacity-90 ${
+              className={`w-full rounded-full bg-black px-8 py-4 text-white transition hover:opacity-90 md:w-auto md:py-3 ${
                 loading ? "cursor-not-allowed opacity-50" : ""
               }`}
             >

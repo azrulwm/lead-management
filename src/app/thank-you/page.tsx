@@ -27,16 +27,16 @@ const ThankYouPage = () => {
           </div>
         </div>
 
-        <h1 className="mb-2 text-3xl font-bold">Thank You</h1>
-        <p className="mb-8 max-w-md text-center text-gray-700">
+        <h1 className="mb-4 text-4xl font-black">Thank You</h1>
+        <p className="mb-8 max-w-lg text-center text-lg font-bold text-gray-700">
           Your information was submitted to our team of immigration attorneys.
           Expect an email from{" "}
-          <span className="font-medium">hello@tryalma.ai</span>.
+          <span className="font-bold">hello@tryalma.ai</span>.
         </p>
 
         <Link
           href="/"
-          className="rounded-full bg-black px-6 py-3 text-white transition hover:opacity-90"
+          className="rounded-md bg-black px-12 py-3 text-white transition hover:opacity-90"
         >
           Go Back to Homepage
         </Link>
