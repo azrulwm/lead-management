@@ -83,7 +83,7 @@ export const LeadTable: React.FC<TableSectionProps> = ({
 }) => {
   const renderPaginationButtons = () => {
     const buttons = [];
-    const maxVisiblePages = 5;
+    const maxVisiblePages = 5; // Back to 5 for tablet/desktop
 
     // Calculate the range of page numbers to show
     let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
@@ -179,38 +179,41 @@ export const LeadTable: React.FC<TableSectionProps> = ({
   };
 
   return (
-    <main className="flex-1 p-6">
-      <h2 className="mb-6 text-2xl font-bold">Leads</h2>
+    <main className="flex-1 p-4 pt-16 md:p-6 md:pt-6">
+      <h2 className="mb-4 text-xl font-bold md:mb-6 md:text-2xl">Leads</h2>
 
-      <div className="mb-4 flex items-center justify-between">
-        <div className="flex items-center space-x-2">
+      {/* Search and Filter Controls */}
+      <div className="mb-4 flex flex-col space-y-3 md:flex-row md:items-center md:justify-between md:space-y-0">
+        <div className="flex flex-col space-y-2 sm:flex-row sm:items-center sm:space-x-2 sm:space-y-0">
           <input
             type="text"
             placeholder="Search by first or last name..."
             value={searchInput}
             onChange={onSearchChange}
             onKeyPress={onSearchKeyPress}
-            className="w-64 rounded border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none"
+            className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none sm:w-64"
           />
-          <button
-            onClick={onSearchSubmit}
-            className="rounded bg-blue-500 px-4 py-2 text-sm text-white hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400"
-          >
-            Search
-          </button>
-          {searchQuery && (
+          <div className="flex space-x-2">
             <button
-              onClick={onClearSearch}
-              className="rounded border border-gray-300 px-3 py-2 text-sm text-gray-600 hover:bg-gray-50"
+              onClick={onSearchSubmit}
+              className="flex-1 rounded bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 sm:flex-none"
             >
-              Clear
+              🔍 Search
             </button>
-          )}
+            {searchQuery && (
+              <button
+                onClick={onClearSearch}
+                className="flex-1 rounded border border-gray-300 px-3 py-2 text-sm text-gray-600 hover:bg-gray-50 sm:flex-none"
+              >
+                Clear
+              </button>
+            )}
+          </div>
         </div>
         <select
           value={statusFilter || "all"}
           onChange={(e) => onStatusFilter(e.target.value)}
-          className="rounded border border-gray-300 px-3 py-2 text-sm"
+          className="w-full rounded border border-gray-300 px-3 py-2 text-sm md:w-auto"
         >
           <option value="all">All Status</option>
           <option value={LeadStatus.PENDING}>Pending</option>
@@ -218,7 +221,8 @@ export const LeadTable: React.FC<TableSectionProps> = ({
         </select>
       </div>
 
-      <div className="overflow-hidden rounded-lg border border-gray-200">
+      {/* Table View - Hidden only on mobile (sm and below) */}
+      <div className="hidden overflow-hidden rounded-lg border border-gray-200 sm:block">
         <table className="min-w-full table-fixed text-sm">
           <thead className="bg-gray-50 text-left">
             <tr>
@@ -269,9 +273,46 @@ export const LeadTable: React.FC<TableSectionProps> = ({
         </table>
       </div>
 
+      {/* Mobile Card View - Only shown on mobile (sm and below) */}
+      <div className="space-y-3 sm:hidden">
+        {currentLeads.map((lead, idx) => (
+          <div
+            key={idx}
+            className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm"
+          >
+            <div className="mb-3 flex items-start justify-between">
+              <div>
+                <h3 className="font-medium text-gray-800">
+                  {lead.firstName} {lead.lastName}
+                </h3>
+                <p className="text-sm text-gray-600">{lead.country}</p>
+              </div>
+              <span
+                className={`rounded-full px-2 py-1 text-xs font-medium ${
+                  lead.status === LeadStatus.PENDING
+                    ? "bg-yellow-100 text-yellow-800"
+                    : "bg-green-100 text-green-800"
+                }`}
+              >
+                {formatStatus(lead.status)}
+              </span>
+            </div>
+            <div className="mb-3 text-sm text-gray-600">
+              <p>Submitted: {formatDate(lead.dateCreated)}</p>
+            </div>
+            <button
+              onClick={() => onEditLead(lead)}
+              className="w-full rounded-lg border-2 border-green-500 bg-green-50 py-2.5 text-sm font-medium text-green-700 hover:bg-green-100 active:bg-green-200"
+            >
+              ✏️ Edit Status
+            </button>
+          </div>
+        ))}
+      </div>
+
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="mt-4 flex items-center justify-between">
+        <div className="mt-4 flex flex-col items-center justify-between space-y-3 md:flex-row md:space-y-0">
           <div className="text-sm text-gray-600">
             Showing {startIndex + 1} to {Math.min(endIndex, totalItems)} of{" "}
             {totalItems} results
@@ -284,8 +325,8 @@ export const LeadTable: React.FC<TableSectionProps> = ({
 
       {/* Edit Status Modal */}
       {isModalOpen && selectedLead && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-          <div className="w-96 rounded-lg bg-white p-6 shadow-lg">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
+          <div className="w-full max-w-md rounded-lg bg-white p-6 shadow-lg">
             <h3 className="mb-4 text-lg font-bold text-gray-800">
               Edit Lead Status
             </h3>
@@ -319,18 +360,18 @@ export const LeadTable: React.FC<TableSectionProps> = ({
               </select>
             </div>
 
-            <div className="flex justify-end space-x-3">
+            <div className="flex flex-col space-y-2 sm:flex-row sm:justify-end sm:space-x-3 sm:space-y-0">
               <button
                 onClick={onCloseModal}
                 disabled={isUpdating}
-                className="rounded border border-gray-300 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+                className="w-full rounded border border-gray-300 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 disabled:opacity-50 sm:w-auto"
               >
                 Cancel
               </button>
               <button
                 onClick={onStatusUpdate}
                 disabled={isUpdating || newStatus === selectedLead.status}
-                className="rounded bg-blue-500 px-4 py-2 text-sm text-white hover:bg-blue-600 disabled:opacity-50"
+                className="w-full rounded bg-blue-500 px-4 py-2 text-sm text-white hover:bg-blue-600 disabled:opacity-50 sm:w-auto"
               >
                 {isUpdating ? "Updating..." : "Update Status"}
               </button>

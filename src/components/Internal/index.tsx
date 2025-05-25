@@ -199,32 +199,34 @@ export const Internal: React.FC = () => {
   return (
     <div className="flex">
       <Sidebar onLogout={handleLogout} />
-      <LeadTable
-        allLeads={allLeads}
-        currentLeads={currentLeads}
-        searchInput={searchInput}
-        searchQuery={searchQuery}
-        statusFilter={statusFilter}
-        currentPage={currentPage}
-        totalPages={totalPages}
-        totalItems={totalItems}
-        startIndex={startIndex}
-        endIndex={endIndex}
-        isModalOpen={isModalOpen}
-        selectedLead={selectedLead}
-        newStatus={newStatus}
-        isUpdating={isUpdating}
-        onSearchChange={handleSearchChange}
-        onSearchSubmit={handleSearchSubmit}
-        onSearchKeyPress={handleSearchKeyPress}
-        onClearSearch={handleClearSearch}
-        onStatusFilter={handleStatusFilter}
-        onPageChange={handlePageChange}
-        onEditLead={openEditModal}
-        onCloseModal={closeModal}
-        onStatusUpdate={handleStatusUpdate}
-        onNewStatusChange={setNewStatus}
-      />
+      <div className="flex-1 md:ml-60">
+        <LeadTable
+          allLeads={allLeads}
+          currentLeads={currentLeads}
+          searchInput={searchInput}
+          searchQuery={searchQuery}
+          statusFilter={statusFilter}
+          currentPage={currentPage}
+          totalPages={totalPages}
+          totalItems={totalItems}
+          startIndex={startIndex}
+          endIndex={endIndex}
+          isModalOpen={isModalOpen}
+          selectedLead={selectedLead}
+          newStatus={newStatus}
+          isUpdating={isUpdating}
+          onSearchChange={handleSearchChange}
+          onSearchSubmit={handleSearchSubmit}
+          onSearchKeyPress={handleSearchKeyPress}
+          onClearSearch={handleClearSearch}
+          onStatusFilter={handleStatusFilter}
+          onPageChange={handlePageChange}
+          onEditLead={openEditModal}
+          onCloseModal={closeModal}
+          onStatusUpdate={handleStatusUpdate}
+          onNewStatusChange={setNewStatus}
+        />
+      </div>
     </div>
   );
 };
