@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 export const Login: React.FC = () => {
   const [username, setUsername] = useState("");
@@ -100,6 +101,18 @@ export const Login: React.FC = () => {
             </button>
           </div>
         </form>
+
+        <div className="text-center">
+          <p className="text-sm text-gray-600">
+            Looking to submit a lead application?{" "}
+            <Link
+              href="/lead-form"
+              className="font-medium text-blue-600 hover:text-blue-500"
+            >
+              Go to Lead Form
+            </Link>
+          </p>
+        </div>
       </div>
     </div>
   );
